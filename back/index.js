@@ -92,6 +92,60 @@ app.get('/company/:id', (req, res)=>{
 
 // endpoints for vacantes
 
+app.get('/job/:id', (req, res)=>{
+    const id = req.params.id
+
+    db.query(`SELECT * FROM job WHERE job_id=${id} `, 
+        (err, result)=>{
+            if (result.length > 0){
+                res.status(200).send(result[0])
+            }else{
+                res.status(400).send({
+                    message: 'No existe la vacante',
+                })
+            }
+        }
+    )
+})
+
+app.get('/job/all/:company_id/:page/:limit', (req, res)=>{
+    const id = req.params.company_id
+    const page = req.params.page
+    const limit = req.params.limit
+
+    const start = (page - 1) * limit
+
+    db.query(`SELECT * FROM job WHERE company_id=${id} order by job_id desc limit ${start}, ${limit} `, 
+        (err, result)=>{
+            if (result.length > 0){
+                res.status(200).send(result)
+            }else{
+                res.status(400).send({
+                    message: 'No tiene vacantes asociados a esta empresa',
+                })
+            }
+        }
+    )
+})
+
+app.get('/job/all/:page/:limit', (req, res)=>{
+    const page = req.params.page
+    const limit = req.params.limit
+    const start = (page - 1) * limit
+
+    db.query(`SELECT * FROM job order by job_id desc limit ${start}, ${limit} `, 
+        (err, result)=>{
+            if (result.length > 0){
+                res.status(200).send(result)
+            }else{
+                res.status(400).send({
+                    message: 'No tiene vacantes asociados a esta empresa',
+                })
+            }
+        }
+    )
+})
+
 app.post('/job', (req, res)=>{
     const title = req.body.title
     const from_date = req.body.from_date
@@ -157,28 +211,104 @@ app.put('/job/:id', (req, res)=>{
 app.delete('/job/:id', (req, res)=>{
     const id = Number(req.params.id)
     const company_id = Number(req.body.company_id)
+    console.log(company_id, id)
+    console.log(typeof company_id)
+    console.log(typeof id)
+    console.log(Number(req.body.company_id))
 
-    switch(id) {
-        case company_id:
-            db.query(`UPDATE job SET deleted=1 WHERE job_id=? and company_id=?`, [id, company_id],  
-                (err, result)=>{
-                    if (err){
-                        res.status(400).send({
-                            message: err
-                        })
-                    }else{
-                        res.status(200).send({
-                            message: 'Vacante actualizada con éxito',
-                            data: result
-                        })
-                    }
+    if (typeof id === 'number' && typeof company_id === 'number'){
+            db.query(`UPDATE job SET deleted=1 where job_id=? and company_id=?`, [id, company_id],  
+            (err, result)=>{
+                if (err){
+                    res.status(400).send({
+                        message: err
+                    })
+                }else{
+                    res.status(200).send({
+                        message: 'Vacante borrada con éxito',
+                        data: result
+                    })
                 }
+            }
             )
-            break;
-        default:
+        }else{
             res.status(401).send({
                 message: 'Empresa no Autorizada'
             })
-            break;
-    }
+        }
+})
+
+// endpoints for personas
+
+app.post('/persons', (req, res)=>{
+    const dni = req.body.dni
+    const name = req.body.name
+    const email = req.body.email
+    const img = req.body.img
+
+    db.query(`INSERT INTO persons (dni, name, email, img) VALUES(?,?,?,?)`, [dni, name, email, img], 
+        (err, result)=>{
+            if(err){
+                res.status(400).send({
+                    message: err
+                })
+                
+            }else{
+                res.status(201).send({
+                    status: 201, 
+                    message: 'Persona creada con éxito',
+                    data: result
+                })
+            }
+        }
+    )
+})
+
+// endpoints for job_apply
+
+app.post('/apply', (req, res)=>{
+    const job_id = req.body.job_id
+    const persons_id = req.body.persons_id
+    const salary = req.body.salary
+
+    db.query(`INSERT INTO job_persons_apply (job_job_id, persons_id, salary) VALUES(?,?,?)`, [job_id, persons_id, salary], 
+        (err, result)=>{
+            if(err){
+                res.status(400).send({
+                    message: err
+                })
+                
+            }else{
+                res.status(201).send({
+                    status: 201, 
+                    message: 'Postulación registrada con éxito',
+                    data: result
+                })
+            }
+        }
+    )
+})
+
+app.put('/apply/:job_id/:persons_id', (req, res)=>{
+    const job_id = req.params.job_id
+    const persons_id = req.params.persons_id
+    const deleted = req.body.deleted
+    const selected = req.body.selected
+
+    db.query(`UPDATE job_persons_apply SET deleted=?, selected=? where persons_id=? and job_job_id=?`, [deleted, selected, persons_id, job_id], 
+        (err, result)=>{
+            if(err){
+                res.status(400).send({
+                    message: err
+                })
+                
+            }else{
+                res.status(201).send({
+                    status: 201, 
+                    message: 'Postulación actualizada con éxito',
+                    data: result
+                })
+            }
+        }
+    )
 })
