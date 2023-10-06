@@ -2,8 +2,22 @@ import Ofertas from "./components/Ofertas"
 import Login from "./components/Login"
 import Register from "./components/Register"
 import { BrowserRouter, Route, Routes, Link } from 'react-router-dom'
+import MisOfertas from "./components/common/MisOfertas"
+import { useState, useEffect } from "react"
 
 const App = () => {
+
+  const [user, setUser] = useState(undefined)
+
+  const logOut = () => {
+    localStorage.clear()
+    setUser(undefined)
+  }
+
+  useEffect(() => {
+    
+  }, [user])
+
   return (
     <BrowserRouter>
       <nav className="py-2 bg-body-tertiary border-bottom">
@@ -22,8 +36,20 @@ const App = () => {
             <li className="nav-item"><a href="#" className="nav-link link-body-emphasis px-2">About</a></li>
           </ul>
           <ul className="nav">
-            <li className="nav-item"><Link to='/login' className="nav-link link-body-emphasis px-2">Iniciar sesión</Link></li>
-            <li className="nav-item"><Link to='/register' className="nav-link link-body-emphasis px-2">Registro</Link></li>
+            {
+              user !== undefined?(
+                <>
+                  <li className="nav-item"><Link to='/misOfertas' className="nav-link link-body-emphasis px-2"><strong>{user.username} - {user.company.toUpperCase()}</strong></Link></li>
+                  <li className="nav-item"><Link to='/login' onClick={logOut} className="nav-link link-body-emphasis px-2 text-danger">Cerrar sesión</Link></li>
+                </>
+
+              ):(
+                <>
+                  <li className="nav-item"><Link to='/login' className="nav-link link-body-emphasis px-2">Iniciar sesión</Link></li>
+                  <li className="nav-item"><Link to='/register' className="nav-link link-body-emphasis px-2">Registro</Link></li>
+                </>
+              )
+            }
           </ul>
         </div>
       </nav>
@@ -82,6 +108,7 @@ const App = () => {
           <Route path="/" element={<Ofertas />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/misOfertas" element={<MisOfertas setUser={setUser}/>} />
         </Routes>
       </div>
 
