@@ -115,7 +115,7 @@ app.get('/job/all/:company_id/:page/:limit', (req, res)=>{
 
     const start = (page - 1) * limit
 
-    db.query(`SELECT * FROM job WHERE company_id=${id} order by job_id desc limit ${start}, ${limit} `, 
+    db.query(`SELECT * FROM job WHERE company_id=${id} and deleted=0 order by job_id desc limit ${start}, ${limit} `, 
         (err, result)=>{
             if (result.length > 0){
                 res.status(200).send(result)
@@ -133,7 +133,7 @@ app.get('/job/all/:page/:limit', (req, res)=>{
     const limit = req.params.limit
     const start = (page - 1) * limit
 
-    db.query(`SELECT * FROM job order by job_id desc limit ${start}, ${limit} `, 
+    db.query(`SELECT DATEDIFF(J.until_date, (select now())) as dias, J.*, C.company, C.logo FROM job J INNER JOIN company C ON C.company_id = J.company_id where deleted=0 order by job_id desc limit ${start}, ${limit} `, 
         (err, result)=>{
             if (result.length > 0){
                 res.status(200).send(result)
@@ -183,29 +183,20 @@ app.put('/job/:id', (req, res)=>{
     const experience = req.body.experience
     const company_id = Number(req.body.company_id)
 
-    switch(id) {
-        case company_id:
-            db.query(`UPDATE job SET title=?, from_date=?, until_date=?, city=?, job_type=?, experience=? WHERE job_id=? and company_id=?`, [title, from_date, until_date, city, job_type, experience, id, company_id],  
-                (err, result)=>{
-                    if (err){
-                        res.status(400).send({
-                            message: err
-                        })
-                    }else{
-                        res.status(200).send({
-                            message: 'Vacante actualizada con éxito',
-                            data: result
-                        })
-                    }
-                }
-            )
-            break;
-        default:
-            res.status(401).send({
-                message: 'Empresa no Autorizada'
-            })
-            break;
-    }
+    db.query(`UPDATE job SET title=?, from_date=?, until_date=?, city=?, job_type=?, experience=? WHERE job_id=? and company_id=?`, [title, from_date, until_date, city, job_type, experience, id, company_id],  
+        (err, result)=>{
+            if (err){
+                res.status(400).send({
+                    message: err
+                })
+            }else{
+                res.status(200).send({
+                    message: 'Vacante actualizada con éxito',
+                    data: result
+                })
+            }
+        }
+    )
 })
 
 app.delete('/job/:id', (req, res)=>{
@@ -216,26 +207,20 @@ app.delete('/job/:id', (req, res)=>{
     console.log(typeof id)
     console.log(Number(req.body.company_id))
 
-    if (typeof id === 'number' && typeof company_id === 'number'){
-            db.query(`UPDATE job SET deleted=1 where job_id=? and company_id=?`, [id, company_id],  
-            (err, result)=>{
-                if (err){
-                    res.status(400).send({
-                        message: err
-                    })
-                }else{
-                    res.status(200).send({
-                        message: 'Vacante borrada con éxito',
-                        data: result
-                    })
-                }
-            }
-            )
+    db.query(`UPDATE job SET deleted=1 where job_id=? and company_id=?`, [id, company_id],  
+    (err, result)=>{
+        if (err){
+            res.status(400).send({
+                message: err
+            })
         }else{
-            res.status(401).send({
-                message: 'Empresa no Autorizada'
+            res.status(200).send({
+                message: 'Vacante borrada con éxito',
+                data: result
             })
         }
+    }
+    )
 })
 
 // endpoints for personas
@@ -246,19 +231,35 @@ app.post('/persons', (req, res)=>{
     const email = req.body.email
     const img = req.body.img
 
-    db.query(`INSERT INTO persons (dni, name, email, img) VALUES(?,?,?,?)`, [dni, name, email, img], 
-        (err, result)=>{
-            if(err){
-                res.status(400).send({
+    //consultar si existe
+    db.query(`SELECT * FROM persons WHERE dni=?`, [dni],
+        (err, result) => {
+            if (err) {
+                res.send({
+                    status: 500,
                     message: err
                 })
-                
-            }else{
-                res.status(201).send({
-                    status: 201, 
-                    message: 'Persona creada con éxito',
-                    data: result
-                })
+            } else {
+                if (result.length > 0) {
+                    res.status(200).send(result[0])
+                } else {
+                    db.query(`INSERT INTO persons (dni, name, email, img) VALUES(?,?,?,?)`, [dni, name, email, img], 
+                    (err, result)=>{
+                        if(err){
+                            res.status(400).send({
+                                message: err
+                            })
+                            
+                        }else{
+                            res.status(201).send({
+                                status: 201, 
+                                message: 'Persona creada con éxito',
+                                data: result
+                            })
+                        }
+                    }
+                )
+                }
             }
         }
     )

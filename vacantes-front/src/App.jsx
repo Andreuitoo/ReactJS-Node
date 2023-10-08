@@ -2,12 +2,13 @@ import Ofertas from "./components/Ofertas"
 import Login from "./components/Login"
 import Register from "./components/Register"
 import { BrowserRouter, Route, Routes, Link } from 'react-router-dom'
-import MisOfertas from "./components/common/MisOfertas"
+import MisOfertas from "./components/MisOfertas"
 import { useState, useEffect } from "react"
 
 const App = () => {
 
   const [user, setUser] = useState(undefined)
+  const [pagina, setPagina] = useState(1)
 
   const logOut = () => {
     localStorage.clear()
@@ -16,7 +17,7 @@ const App = () => {
 
   useEffect(() => {
     
-  }, [user])
+  }, [user, pagina])
 
   return (
     <BrowserRouter>
@@ -108,7 +109,7 @@ const App = () => {
           <Route path="/" element={<Ofertas />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/misOfertas" element={<MisOfertas setUser={setUser}/>} />
+          <Route path="/misOfertas" element={<MisOfertas pagina={pagina} setPagina={setPagina} setUser={setUser}/>} />
         </Routes>
       </div>
 

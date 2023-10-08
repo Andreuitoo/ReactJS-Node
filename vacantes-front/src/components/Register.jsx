@@ -72,7 +72,7 @@ const Register = () => {
     setloading(true)
     try {
       const { data } = await axios.post(
-        `company`, 
+        `http://localhost:3001/company`, 
         {
           logo,
           company,

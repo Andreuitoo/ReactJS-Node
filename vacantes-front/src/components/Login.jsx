@@ -63,7 +63,7 @@ const Login = () => {
       Swal.fire({
         position: 'top-end',
         icon:'error',
-        title: err.status,
+        title: err.message.includes('401')? 'Datos de acceso incorrectos' : err.message,
         showConfirmButton: false,
         timer: 3000
       })
