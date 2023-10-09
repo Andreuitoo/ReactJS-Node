@@ -134,9 +134,9 @@ const VacantesPublicas = () => {
                                     <div className="flex-grow-1">
                                         <h5 className="card-title">{item.title}</h5>
                                         <p className="card-text">
-                                            <img src={item.logo} alt="logo empresa" width={24} /> {""}{item.company}
-                                            {""}
-                                            Ubicación: {item.city}({item.job_type})
+                                            <img src={item.logo} alt="logo empresa" width={24} /> 
+                                            {""}{item.company}
+                                            {" "}Ubicación: {item.city}({item.job_type})
                                             <br />
                                             <span className='text-secondary'><strong>Experiencia</strong>: {item.experience} años</span>
                                             <br />

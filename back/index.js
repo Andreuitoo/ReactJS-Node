@@ -313,3 +313,24 @@ app.put('/apply/:job_id/:persons_id', (req, res)=>{
         }
     )
 })
+
+
+app.get('/applications/:jobId',(req,res)=>{
+    const jobId = req.params.jobId
+    db.query(`SELECT J.title,P.*,JPA.salary FROM persons P 
+    INNER JOIN job_persons_apply JPA ON JPA.persons_id=P.person_id
+    INNER JOIN job J ON J.job_id=JPA.job_job_id 
+    WHERE J.job_id=${jobId}`,
+    (err, result) => {
+        if (result.length >0) {
+            res.status(200)
+            .send(result)
+        }else{
+            res.status(400).send({
+                message: 'No hay postulaciones'
+            })
+        }
+    }
+    );
+
+})

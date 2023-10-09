@@ -5,6 +5,7 @@ import Titulo from './common/Titulo'
 import Swal from 'sweetalert2'
 import axios from 'axios'
 import ListaVacantes from './ListaVacantes'
+import ListaPostulaciones from './ListaPostulaciones'
 
 const MisOfertas = ({ setUser, pagina, setPagina }) => {
   const [nombre, setNombre] = useState('')
@@ -23,6 +24,8 @@ const MisOfertas = ({ setUser, pagina, setPagina }) => {
   const [vacantes, setVacantes] = useState([])
   const [vacante, setVacante] = useState(undefined)
   const [eliminar, setEliminar] = useState(undefined)
+  const [postulaciones, setPostulaciones] = useState([])
+  const [selected_job, setSelected_job] = useState(undefined)
 
   
   const loadData = async () => {
@@ -153,6 +156,7 @@ const MisOfertas = ({ setUser, pagina, setPagina }) => {
   }
 
   const getVacantesApi = async () => {
+    validarSession()
     try {
       const { id } = await JSON.parse(localStorage.getItem('user'))
       const { data } = await axios.get(`http://localhost:3001/job/all/${id}/${pagina}/5`)
@@ -162,6 +166,22 @@ const MisOfertas = ({ setUser, pagina, setPagina }) => {
         position: 'top-end',
         icon: 'error',
         title: err.message,
+        showConfirmButton: false,
+        timer: 3000
+      })
+    }
+  }
+
+  const getPostulacionesApi = async () => {
+    try {
+      const { data } = await axios.get(`applications/${selected_job}`)
+        setPostulaciones(data)
+    } catch (err) {
+      setPostulaciones([])
+      Swal.fire({
+        position: 'top-end',
+        icon: 'success',
+        title: err.message.includes('400')?'No hay postulaciones' : err.message,
         showConfirmButton: false,
         timer: 3000
       })
@@ -182,6 +202,12 @@ const MisOfertas = ({ setUser, pagina, setPagina }) => {
   useEffect(() => {
     loadData()
   }, [vacantes])
+
+  useEffect(() => {
+    if(selected_job > 0){
+      getPostulacionesApi()
+    }
+  }, [selected_job])
 
   useEffect(() => {
     getVacantesApi()
@@ -284,12 +310,17 @@ const MisOfertas = ({ setUser, pagina, setPagina }) => {
                 </div>
               </div>
             </div>
-
             <div className="col-md-8">
-              <Titulo titulo='Lista de vacantes' />
+            <Titulo titulo='Lista de vacantes' />
               <div className="card border mb-3" >
                 <div className="card-body">
-                  <ListaVacantes setEliminar={setEliminar} eliminar={eliminar} pagina={pagina} setPagina={setPagina} vacante={vacante} setVacante={setVacante} vacantes={vacantes} />
+                  <ListaVacantes  setSelected_job={setSelected_job} setEliminar={setEliminar} eliminar={eliminar} pagina={pagina} setPagina={setPagina} vacante={vacante} setVacante={setVacante} vacantes={vacantes} />
+                </div>
+              </div>
+              <Titulo titulo='Postulaciones' />
+              <div className="card border mb-3" >
+                <div className="card-body">
+                  <ListaPostulaciones postulaciones={postulaciones} />
                 </div>
               </div>
             </div>

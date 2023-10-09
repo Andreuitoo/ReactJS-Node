@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ListaVacantes = ({ vacantes, pagina, setPagina, vacante, setVacante, setEliminar }) => {
+const ListaVacantes = ({ vacantes, pagina, setPagina, vacante, setVacante, setEliminar, setSelected_job }) => {
     return (
         <table className="table">
             <thead>
@@ -9,6 +9,8 @@ const ListaVacantes = ({ vacantes, pagina, setPagina, vacante, setVacante, setEl
                     <th scope="col">Tipo</th>
                     <th scope="col">Ubicación</th>
                     <th scope="col">Experiencia</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -21,14 +23,19 @@ const ListaVacantes = ({ vacantes, pagina, setPagina, vacante, setVacante, setEl
                             <td>{item.city}</td>
                             <td>{item.experience}</td>
                             <td>
-                                <button className="btn btn-info mx-3" type="button" onClick={() => setVacante(item)}>Editar</button>
+                                <button className="btn btn-info" type="button" onClick={() => setVacante(item)}>Editar</button>
+                            </td>
+                            <td>
                                 <button className="btn btn-danger" type="button" onClick={() => {setEliminar(item.job_id)}}>Eliminar</button>
+                            </td>
+                            <td>
+                                <button className="btn btn-info" type="button" onClick={() => {setSelected_job(item.job_id)}}>postulados</button>
                             </td>
                         </tr>
                     )
                 })}
                 <tr>
-                    <td colSpan={5}>
+                    <td colSpan={8}>
                         <nav aria-label="...">
                             <ul className="pagination justify-content-center">
                                 {
